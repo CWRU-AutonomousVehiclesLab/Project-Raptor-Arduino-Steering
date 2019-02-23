@@ -17,6 +17,12 @@
 #define STEERING 1  // DO NOT CHANGE!
 #define THROTTLE 2  // DO NOT CHANGE!
 
+//! State Machine:
+int current_state = 0;
+#define EMERGENCY_STOP 0
+#define IDLE 1
+#define RC_MODE 2
+#define AUTONOMOUS_MODE_EN 3
 //! Global Variables
 volatile uint8_t messagein[MESSAGE_LENGTH];
 
@@ -64,18 +70,50 @@ void print_recieved_message() {
 }
 
 void SerialInterpretation() {
-    if (Serial3.available() == MESSAGE_LENGTH) {
+    if (Serial3.available() >= MESSAGE_LENGTH) {
         Serial.println("Recieved...");
+        int totalBytes = Serial3.available();
+        Serial.print("Total Bytes:");
+        Serial.print("\t");
+        Serial.print(totalBytes);
+        Serial.println("\t");
+
         for (int counter = 0; counter < MESSAGE_LENGTH; counter++) {
             messagein[counter] = Serial3.read();
         }
+        while (Serial3.available() > 0) {
+            Serial3.read();
+        }
     } else {
         Serial3.flush();
+        Serial3.read();
+        Serial.println("Not Recieved...");
     }
     print_recieved_message();
 }
 void loop() {
     SerialInterpretation();
-    int ServoDeg = pulse2percentage();
-    steering.write(ServoDeg);
+    switch (messagein[STATE]) {
+        case EMERGENCY_STOP:
+            steering.write(0);
+            break;
+
+        case IDLE:
+            steering.write(0);
+            break;
+
+        case RC_MODE:
+            steering.writeMicroseconds(pulse2percentage());
+            break;
+
+        case AUTONOMOUS_MODE_EN:
+            steering.write(0);
+            break;
+
+        default:
+            Serial.println("System fucked up!");
+            break;
+    }
+    // int ServoDeg = pulse2percentage();
+    // steering.write(ServoDeg);
 }

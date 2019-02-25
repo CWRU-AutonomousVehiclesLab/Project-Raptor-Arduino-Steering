@@ -95,11 +95,11 @@ void loop() {
     SerialInterpretation();
     switch (messagein[STATE]) {
         case EMERGENCY_STOP:
-            steering.write(0);
+            steering.writeMicroseconds(pulse2percentage());
             break;
 
         case IDLE:
-            steering.write(0);
+            steering.writeMicroseconds(pulse2percentage());
             break;
 
         case RC_MODE:
@@ -107,7 +107,7 @@ void loop() {
             break;
 
         case AUTONOMOUS_MODE_EN:
-            steering.write(0);
+            steering.writeMicroseconds(pulse2percentage());
             break;
 
         default:

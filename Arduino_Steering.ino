@@ -77,16 +77,18 @@ void SerialInterpretation() {
         Serial.print("\t");
         Serial.print(totalBytes);
         Serial.println("\t");
-
         for (int counter = 0; counter < MESSAGE_LENGTH; counter++) {
             messagein[counter] = Serial3.read();
         }
+
         while (Serial3.available() > 0) {
             Serial3.read();
         }
     } else {
         Serial3.flush();
-        Serial3.read();
+        while (Serial3.available() > 0) {
+            Serial3.read();
+        }
         Serial.println("Not Recieved...");
     }
     print_recieved_message();

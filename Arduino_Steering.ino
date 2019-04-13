@@ -3,7 +3,7 @@
 #define MESSAGE_LENGTH 4
 
 //! Pin Setup:
-#define Servo_OUTPUT 22
+#define Servo_OUTPUT 24
 #define ADAS_STEERING_OUTPUT 23
 
 //! Servo Definition:

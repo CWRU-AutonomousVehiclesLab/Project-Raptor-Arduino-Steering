@@ -25,7 +25,8 @@ int current_state = 0;
 #define AUTONOMOUS_MODE_EN 3
 //! Global Variables
 volatile uint8_t messagein[MESSAGE_LENGTH];
-
+volatile int last_command;
+volatile int new_command;
 //! Global Struct
 Servo steering;
 Servo ADAS_steering;
@@ -35,6 +36,7 @@ void setup() {
     Serial3.begin(SERIAL_PORT_SPEED);
     steering.attach(Servo_OUTPUT, STEERING_MIN, STEERING_MAX);
     ADAS_steering.attach(ADAS_STEERING_OUTPUT);
+    last_command = -1;
 }
 //! Used for convering the pulse back to the steering angle
 int pulse2percentage() {
@@ -97,19 +99,24 @@ void loop() {
     SerialInterpretation();
     switch (messagein[STATE]) {
         case EMERGENCY_STOP:
-            steering.writeMicroseconds(pulse2percentage());
+            // Emergency Stop should not have any additional motion. 
             break;
 
         case IDLE:
-            steering.writeMicroseconds(pulse2percentage());
+            // The purpose of the state is to leave it as is, no write operation on the motor
             break;
 
         case RC_MODE:
-            steering.writeMicroseconds(pulse2percentage());
+            new_command = pulse2percentage();
+            if ((abs(last_command-new_command))>20){
+                steering.writeMicroseconds(new_command);
+                last_command = new_command;
+            }
             break;
 
         case AUTONOMOUS_MODE_EN:
-            steering.writeMicroseconds(pulse2percentage());
+            // Upper level controller should be providing smooth command, therefore command can be utilized directly
+            //steering.writeMicroseconds(pulse2percentage());
             break;
 
         default:
